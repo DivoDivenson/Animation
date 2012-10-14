@@ -4,6 +4,9 @@
 //#include <glut.h>     // for gluPerspective & gluLookAt
 #include <GL/freeglut.h>
 #include <sys/time.h>
+
+#include "Camera.h"
+
 void setupScene();
 void updateScene();
 void renderScene();
@@ -12,6 +15,9 @@ void keypress(unsigned char key, int x, int y);
 void setViewport(int width, int height);
 
 typedef unsigned int DWORD;
+
+
+
 
 
 int         rotationAngle=0;
@@ -26,6 +32,8 @@ GLfloat emerald_ambient[] =
 {0.0215, 0.1745, 0.0215}, emerald_diffuse[] =
 {0.07568, 0.61424, 0.07568}, emerald_specular[] =
 {0.633, 0.727811, 0.633}, emerald_shininess = 76.8;
+
+
 
 void renderLeg(float x){
 
@@ -184,10 +192,6 @@ void setupScene(){
 
     glEnable(GL_DEPTH_TEST);
 
-    // Generate GL texture ID & load texture
-//    glGenTextures(1, &textureId);
-    //textureTga logoTexture("BushRumsfeld2.tga", textureId);
-//  textureTga logoTexture("BushRumsfeld.tga", textureId);
 
 }
 
@@ -222,6 +226,13 @@ void setViewport(int width, int height) {
 
 }
 
+Camera * camera;
+
+void mouse_move(int x, int y){
+	camera->mouse_move(x, y);
+}
+
+
 int main(int argc, char *argv[]){
 
     // Initialise OpenGL
@@ -233,11 +244,17 @@ int main(int argc, char *argv[]){
     glutInitWindowSize(640,480);
     windowId = glutCreateWindow("Graphics Lab 2: Hierarchical Transformations");
 
+    camera = new Camera();
+
     // Set GLUT callback functions
     glutReshapeFunc(setViewport);
     glutDisplayFunc(renderScene);
     glutIdleFunc(updateScene);
     glutKeyboardFunc(keypress);
+    glutPassiveMotionFunc(mouse_move);
+    glutMotionFunc(mouse_move);
+   // glutTimerFunc(25, updateScene, 0);
+
 
     // Setup OpenGL state & scene resources (models, textures etc)
     setupScene();
