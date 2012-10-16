@@ -41,7 +41,7 @@ int side_direction[] = {1, 0, 1, 0, 1, 0};
 
 int start_angles[] = {20, 100};
 
-int side_angles[] = {0, 30, 0, 30, 0, 0};
+int side_angles[] = {0, 30, 0, 30, 0, 30};
 
 
 void renderLeg(float pos, float &top_angle, float &bot_angle, int &direction,
@@ -194,6 +194,13 @@ void renderScene(){
 	renderLeg(0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
 	renderLeg(1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
 	renderLeg(2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
+
+	glRotatef(180.0f, 0, 1, 0);
+	glPushMatrix();
+	renderLeg(0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
+	renderLeg(-1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
+	renderLeg(-2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
+	glPopMatrix();
 	//renderLeg(1);
 	//renderLeg(2);
 
