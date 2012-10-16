@@ -7,6 +7,9 @@
 
 #include "Camera.h"
 
+#define START1 20
+#define START2 100
+
 void setupScene();
 void updateScene();
 void renderScene();
@@ -31,9 +34,18 @@ GLfloat emerald_ambient[] =
 {0.07568, 0.61424, 0.07568}, emerald_specular[] =
 {0.633, 0.727811, 0.633}, emerald_shininess = 76.8;
 
+float leg_angles[8][2];
+
+int direction[] = {0, 1, 0, 1, 0, 1};
+int side_direction[] = {1, 0, 1, 0, 1, 0};
+
+int start_angles[] = {20, 100};
+
+int side_angles[] = {0, 30, 0, 30, 0, 0};
 
 
-void renderLeg(float x){
+void renderLeg(float pos, float &top_angle, float &bot_angle, int &direction,
+		int &side_angle, int &side_direction){
 
 
 	//To setup the creation of quadric objects
@@ -42,6 +54,94 @@ void renderLeg(float x){
     GLUquadric * nQ2;
     nQ2 = gluNewQuadric();
 
+    //Movement for upper leg
+    glPushMatrix();
+    glTranslatef(0.0 , 0.0, -pos);
+ 	glRotatef(side_angle, 0, 1, 0);
+    if(side_direction == 0)
+    {
+    	side_angle -= 1;
+    }
+    else if(side_direction == 1)
+    {
+    	side_angle += 1;
+    }
+
+
+    if(side_angle <= 0)
+    {
+    	side_direction = 1;
+    }
+    else if(side_angle >= 30)
+    {
+    	side_direction = 0;
+    }
+
+
+
+    //Movement for upper leg
+    glRotatef(top_angle, 0, 0, 1);
+    if(side_direction != 1)
+    {
+    	if(direction == 0)
+    	{
+    		top_angle += 2;
+    		bot_angle += 2;
+
+    	}
+    	else if(direction == 1)
+    	{
+    		top_angle -= 2;
+    		bot_angle -= 2;
+    	}
+    }
+
+
+    if(top_angle >=  50.0f)
+    {
+    	direction = 1;
+    }
+    else if(top_angle <= 20.0f)
+    {
+    	direction = 0;
+    }
+
+
+    //angle += 2.0f;
+
+    //Draw joint and upper leg
+    glutSolidSphere(0.2f, 20, 20);
+    glTranslatef(0.15f, 0, 0);
+    glPushMatrix();
+    	glRotatef(90.0f, 0, 1, 0);
+    	gluCylinder(nQ, 0.15f, 0.10f, 1, 20, 5);
+    glPopMatrix();
+
+
+
+    //Draw join and mid leg
+    glTranslatef(1.0f, 0, 0);
+    glRotatef(bot_angle, 0, 0, -1);
+
+    glutSolidSphere(0.2f, 20, 20);
+    glPushMatrix();
+    	glRotatef(90.0f, 0, 1, 0);
+        gluCylinder(nQ, 0.12f, 0.08f, 1, 20, 5);
+    glPopMatrix();
+
+    glTranslatef(1.0f, 0, 0);
+    glRotatef(10, 0, 0, 1);
+    glutSolidSphere(0.1f, 20, 20);
+    glPushMatrix();
+       	glRotatef(90.0f, 0, 1, 0);
+        gluCylinder(nQ, 0.05f, 0.01f, 0.3, 20, 5);
+    glPopMatrix();
+
+    glPopMatrix();
+
+
+
+    /*
 	glTranslatef(0.0f, 0.0f, 0.5f);
 	glTranslatef(x, 0, 0);
 	//Rotatae everything above the base
@@ -57,7 +157,7 @@ void renderLeg(float x){
 	glRotatef(90.f, -1, 0, 0);
 	gluCylinder(nQ2, 0.15, 0.15, 1, 20, 5);
 	glPopMatrix();
-
+	*/
 
 
 }
@@ -79,7 +179,7 @@ void renderScene(){
     // Reset Modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    camera->draw();
+    //camera->draw();
     glPushMatrix();
     //Go back 10 along Z axis so we can see the models
     gluLookAt(0,0,10,  0,0,-1,  0,1,0);
@@ -88,11 +188,14 @@ void renderScene(){
     glRotatef(45.0f, 0.0f, -1.0f, 0.0f);
 
     //at origin draw base
-    glutSolidCube(1.0f);
+    //glutSolidCube(1.0f);
 
-	renderLeg(-1);
-	renderLeg(1);
-	renderLeg(2);
+
+	renderLeg(0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
+	renderLeg(1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
+	renderLeg(2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
+	//renderLeg(1);
+	//renderLeg(2);
 
     glPopMatrix();
 
@@ -241,6 +344,24 @@ int main(int argc, char *argv[]){
     glutInitWindowPosition(50,50);
     glutInitWindowSize(640,480);
     windowId = glutCreateWindow("Graphics Lab 2: Hierarchical Transformations");
+
+    leg_angles[0][0] = START1;
+    leg_angles[0][1] = START2;
+
+    leg_angles[1][0] = START1;
+    leg_angles[1][1] = START2;
+
+    leg_angles[2][0] = START1;
+    leg_angles[2][1] = START2;
+
+    leg_angles[3][0] = START1;
+    leg_angles[3][1] = START2;
+
+    leg_angles[4][0] = START1;
+    leg_angles[4][1] = START2;
+
+    leg_angles[5][0] = START1;
+    leg_angles[5][1] = START2;
 
     camera = new Camera();
     // Setup OpenGL state & scene resources (models, textures etc)
