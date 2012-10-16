@@ -44,7 +44,7 @@ int start_angles[] = {20, 100};
 int side_angles[] = {0, 30, 0, 30, 0, 30};
 
 
-void renderLeg(float pos, float &top_angle, float &bot_angle, int &direction,
+void renderLeg(float direction, float pos, float &top_angle, float &bot_angle, int &vert_direction,
 		int &side_angle, int &side_direction){
 
 
@@ -57,7 +57,7 @@ void renderLeg(float pos, float &top_angle, float &bot_angle, int &direction,
     //Movement for upper leg
     glPushMatrix();
     glTranslatef(0.0 , 0.0, -pos);
- 	glRotatef(side_angle, 0, 1, 0);
+ 	glRotatef(side_angle, 0, direction, 0);
     if(side_direction == 0)
     {
     	side_angle -= 1;
@@ -83,13 +83,13 @@ void renderLeg(float pos, float &top_angle, float &bot_angle, int &direction,
     glRotatef(top_angle, 0, 0, 1);
     if(side_direction != 1)
     {
-    	if(direction == 0)
+    	if(vert_direction == 0)
     	{
     		top_angle += 2;
     		bot_angle += 2;
 
     	}
-    	else if(direction == 1)
+    	else if(vert_direction == 1)
     	{
     		top_angle -= 2;
     		bot_angle -= 2;
@@ -99,11 +99,11 @@ void renderLeg(float pos, float &top_angle, float &bot_angle, int &direction,
 
     if(top_angle >=  50.0f)
     {
-    	direction = 1;
+    	vert_direction = 1;
     }
     else if(top_angle <= 20.0f)
     {
-    	direction = 0;
+    	vert_direction = 0;
     }
 
 
@@ -191,15 +191,15 @@ void renderScene(){
     //glutSolidCube(1.0f);
 
 
-	renderLeg(0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
-	renderLeg(1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
-	renderLeg(2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
+	renderLeg(1.0, 0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
+	renderLeg(1.0, 1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
+	renderLeg(1.0, 2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
 
 	glRotatef(180.0f, 0, 1, 0);
 	glPushMatrix();
-	renderLeg(0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
-	renderLeg(-1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
-	renderLeg(-2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
+	renderLeg(-1.0, 0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
+	renderLeg(-1.0, -1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
+	renderLeg(-1.0, -2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
 	glPopMatrix();
 	//renderLeg(1);
 	//renderLeg(2);
