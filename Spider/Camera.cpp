@@ -4,8 +4,12 @@
  *  Created on: 14 Oct 2012
  *      Author: divo
  */
+#include <iostream>
 
+#include <math.h>
+#include <GL/freeglut.h>
 #include "Camera.h"
+#include "consts.h"
 
 Camera::Camera() {
 	xrot = 0;
@@ -25,7 +29,21 @@ void Camera::move_player()
 	if(xrot < -360)
 		xrot += 360;
 
+	float xrotrad, yrotrad;
+	xrotrad = (xrot / 180 * M_PI);
+	yrotrad = (yrot / 180 * M_PI);
 
+	xpos = float(sin(yrotrad) * SPEED);
+	zpos = float(cos(yrotrad) * SPEED);
+	ypos = float(sin(xrotrad) * SPEED);
+
+}
+
+void Camera::draw()
+{
+	glRotatef(xrot, 1.0f, 0.0f, 0.0f);
+	glRotatef(yrot, 0.0f, 1.0f, 0.0f);
+	glTranslatef(-xpos, -ypos, -zpos);
 }
 
 void Camera::mouse_move(int x, int y)

@@ -16,9 +16,7 @@ void setViewport(int width, int height);
 
 typedef unsigned int DWORD;
 
-
-
-
+Camera * camera;
 
 int         rotationAngle=0;
 bool        wireframe=false;
@@ -81,18 +79,13 @@ void renderScene(){
     // Reset Modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    camera->draw();
+    glPushMatrix();
     //Go back 10 along Z axis so we can see the models
     gluLookAt(0,0,10,  0,0,-1,  0,1,0);
-
     //Rotate so things look isometric
     glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
     glRotatef(45.0f, 0.0f, -1.0f, 0.0f);
-
-    //To setup the creation of quadric objects
-    GLUquadric* nQ;
-    nQ=gluNewQuadric();
-    GLUquadric * nQ2;
-    nQ2 = gluNewQuadric();
 
     //at origin draw base
     glutSolidCube(1.0f);
@@ -100,6 +93,9 @@ void renderScene(){
 	renderLeg(-1);
 	renderLeg(1);
 	renderLeg(2);
+
+    glPopMatrix();
+
 
 /*    glTranslatef(0.0f, 0.5f, 0.0f);
     //rotate everything above the base
@@ -131,6 +127,7 @@ void renderScene(){
     glPopMatrix(); //restore the state of the modelview matrix
     // Swap double buffer for flicker-free animation
 	*/
+	//camera->draw();
     glutSwapBuffers();
 
 }
@@ -138,7 +135,8 @@ void renderScene(){
 void updateScene(){
     timeval tim;
     gettimeofday(&tim,NULL);
-    // Wait until at least 16ms passed since start of last frame
+    // Wait until at least 16ms passed since    //To setup the creation of quadric objects
+
     // Effectively caps framerate at ~60fps
     double t2 = tim.tv_sec +(tim.tv_usec/1000000.0);
     while(t2-lastTickCount<16);
@@ -148,6 +146,7 @@ void updateScene(){
     rotationAngle+=2;
 
     // Do any other updates here
+	camera->move_player();
 
     // Draw the next frame
     glutPostRedisplay();
@@ -226,7 +225,6 @@ void setViewport(int width, int height) {
 
 }
 
-Camera * camera;
 
 void mouse_move(int x, int y){
 	camera->mouse_move(x, y);
@@ -245,6 +243,8 @@ int main(int argc, char *argv[]){
     windowId = glutCreateWindow("Graphics Lab 2: Hierarchical Transformations");
 
     camera = new Camera();
+    // Setup OpenGL state & scene resources (models, textures etc)
+    setupScene();
 
     // Set GLUT callback functions
     glutReshapeFunc(setViewport);
@@ -253,11 +253,7 @@ int main(int argc, char *argv[]){
     glutKeyboardFunc(keypress);
     glutPassiveMotionFunc(mouse_move);
     glutMotionFunc(mouse_move);
-   // glutTimerFunc(25, updateScene, 0);
-
-
-    // Setup OpenGL state & scene resources (models, textures etc)
-    setupScene();
+    //glutTimerFunc(25, updateScene, 0);
 
     // Show window & start update loop
     glutMainLoop();

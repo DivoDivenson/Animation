@@ -18,6 +18,7 @@ public:
 	virtual ~Camera();
 	void move_player();
 	void mouse_move(int x, int y);
+	void draw();
 
 };
 
