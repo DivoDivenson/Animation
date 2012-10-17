@@ -6,6 +6,7 @@
 #include <sys/time.h>
 
 #include "Camera.h"
+#include "model3DS.h"
 
 #define START1 20
 #define START2 100
@@ -20,6 +21,7 @@ void setViewport(int width, int height);
 typedef unsigned int DWORD;
 
 Camera * camera;
+model3DS * spider_body;
 
 int         rotationAngle=0;
 bool        wireframe=false;
@@ -248,63 +250,34 @@ void renderScene(){
     //Go back 10 along Z axis so we can see the models
     gluLookAt(0,0,10,  0,0,-1,  0,1,0);
     //Rotate so things look isometric
-    glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(45.0f, 0.0f, -1.0f, 0.0f);
+    //glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+    //glRotatef(45.0f, 0.0f, -1.0f, 0.0f);
 
     //at origin draw base
     //glutSolidCube(1.0f);
 
+    spider_body->draw();
 
 	render_forward_leg(1.0, -1, x, y, dir);
 
 
-	render_leg(1.0, 0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
-	render_leg(1.0, 1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
-	render_leg(1.0, 2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
+	//render_leg(1.0, 0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
+	//render_leg(1.0, 1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
+	//render_leg(1.0, 2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
 
 	glRotatef(180.0f, 0, 1, 0);
 	glPushMatrix();
-	render_leg(-1.0, 0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
-	render_leg(-1.0, -1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
-	render_leg(-1.0, -2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
+	//render_leg(-1.0, 0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
+	//render_leg(-1.0, -1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
+	//render_leg(-1.0, -2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
 	glPopMatrix();
 	//render_leg(1);
 	//render_leg(2);
 
     glPopMatrix();
 
-
-/*    glTranslatef(0.0f, 0.5f, 0.0f);
-    //rotate everything above the base
-    glRotatef(-1*rotationAngle/4.f,0,1,0);
-    glRotatef(-1*rotationAngle/3.f,1,0,0);
-    glRotatef(-1*rotationAngle/2.f,0,0,1);
-//  glPushMatrix();
-    //draw first joint
-    glutSolidSphere(0.3f, 20, 20);
-
-    //cylinder, draw upper arm
-    glPushMatrix();
-    glRotatef(90.0f, -1.0f, 0.0f, 0.0f);
-    gluCylinder(nQ, 0.15, 0.15, 1.5f, 20, 5);
-    //glRotatef(90.0f, 1.0f, 0.0f, 0.0f); //Same as pop
-    glPopMatrix(); //Undo the rotate
-
-    glTranslatef(0.0f, 1.7f, 0.0f);
-    //Rotate the lower arm
-    glRotatef(-1*rotationAngle/4.f,0,1,0);
-    glRotatef(-1*rotationAngle/3.f,1,0,0);
-    glRotatef(-1*rotationAngle/2.f,0,0,1);
-
-    //second join
-    glutSolidSphere(0.3f, 20, 20);
-    //Horizontal cylinder for lower arm
-    gluCylinder(nQ2, 0.15, 0.15, 1.5f, 20, 5);
-
-    glPopMatrix(); //restore the state of the modelview matrix
-    // Swap double buffer for flicker-free animation
-	*/
-	//camera->draw();
+    //glTranslatef(0, 0, 10);
+    //camera->draw();
     glutSwapBuffers();
 
 }
@@ -365,6 +338,8 @@ void setupScene(){
     glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, white_light);
     glShadeModel(GL_SMOOTH);
+
+    spider_body = new model3DS("./teddy.3ds", 1);
 
     glEnable(GL_DEPTH_TEST);
 
