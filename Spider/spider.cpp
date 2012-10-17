@@ -346,7 +346,7 @@ void setupScene(){
 
 
     glEnable(GL_DEPTH_TEST);
-    spider_body = new model3DS("./Assets/body.3ds", 1);
+    spider_body = new model3DS("./Assets/leg_lower.3ds", 1);
 
 
 
