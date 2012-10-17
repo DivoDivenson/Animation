@@ -27,7 +27,7 @@ int         rotationAngle=0;
 bool        wireframe=false;
 int         windowId;
 DWORD       lastTickCount;
-GLfloat white_light[] = {1.0, 1.0, 1.0, 1.0};
+GLfloat white_light[] = {0.5, 0.5, 0.5, 0.5};
 GLfloat left_light_position[] = {1,0,-1, 1.0};
 GLfloat right_light_position[] = {-1,0,-1, 1.0};
 
@@ -242,21 +242,26 @@ void renderScene(){
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, emerald_specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, emerald_shininess);
 
+
     // Reset Modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     //camera->draw();
     glPushMatrix();
+    //glEnable(GL_TEXTURE_2D);
     //Go back 10 along Z axis so we can see the models
     gluLookAt(0,0,10,  0,0,-1,  0,1,0);
     //Rotate so things look isometric
-    //glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
-    //glRotatef(45.0f, 0.0f, -1.0f, 0.0f);
+    glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+    glRotatef(45.0f, 0.0f, -1.0f, 0.0f);
 
     //at origin draw base
     //glutSolidCube(1.0f);
 
+    glPushMatrix();
+    glRotatef(90.0f, 0, 1, 0);
     spider_body->draw();
+    glPopMatrix();
 
 	render_forward_leg(1.0, -1, x, y, dir);
 
@@ -273,7 +278,7 @@ void renderScene(){
 	glPopMatrix();
 	//render_leg(1);
 	//render_leg(2);
-
+	//glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 
     //glTranslatef(0, 0, 10);
@@ -339,9 +344,10 @@ void setupScene(){
     glLightfv(GL_LIGHT1, GL_DIFFUSE, white_light);
     glShadeModel(GL_SMOOTH);
 
-    spider_body = new model3DS("./teddy.3ds", 1);
 
     glEnable(GL_DEPTH_TEST);
+    spider_body = new model3DS("./Assets/body.3ds", 1);
+
 
 
 }
@@ -419,7 +425,6 @@ int main(int argc, char *argv[]){
 
     camera = new Camera();
     // Setup OpenGL state & scene resources (models, textures etc)
-    setupScene();
 
     // Set GLUT callback functions
     glutReshapeFunc(setViewport);
@@ -429,6 +434,9 @@ int main(int argc, char *argv[]){
     glutPassiveMotionFunc(mouse_move);
     glutMotionFunc(mouse_move);
     //glutTimerFunc(25, updateScene, 0);
+
+    setupScene();
+
 
     // Show window & start update loop
     glutMainLoop();
