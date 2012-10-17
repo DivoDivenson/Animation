@@ -43,8 +43,13 @@ int start_angles[] = {20, 100};
 
 int side_angles[] = {0, 30, 0, 30, 0, 30};
 
+float x, y;
+int dir;
 
-void renderLeg(float direction, float pos, float &top_angle, float &bot_angle, int &vert_direction,
+
+
+
+void render_leg(float direction, float pos, float &top_angle, float &bot_angle, int &vert_direction,
 		int &side_angle, int &side_direction){
 
 
@@ -57,7 +62,9 @@ void renderLeg(float direction, float pos, float &top_angle, float &bot_angle, i
     //Movement for upper leg
     glPushMatrix();
     glTranslatef(0.0 , 0.0, -pos);
+
  	glRotatef(side_angle, 0, direction, 0);
+
     if(side_direction == 0)
     {
     	side_angle -= 1;
@@ -140,24 +147,81 @@ void renderLeg(float direction, float pos, float &top_angle, float &bot_angle, i
     glPopMatrix();
 
 
+}
 
-    /*
-	glTranslatef(0.0f, 0.0f, 0.5f);
-	glTranslatef(x, 0, 0);
-	//Rotatae everything above the base
 
+void render_forward_leg(float direction, float pos, float &top_angle, float &bot_angle, int &vert_direction)
+{
+
+
+	//To setup the creation of quadric objects
+    GLUquadric* nQ;
+    nQ=gluNewQuadric();
+    GLUquadric * nQ2;
+    nQ2 = gluNewQuadric();
+
+    //Movement for upper leg
     glPushMatrix();
-	glRotatef(30, 0, -1, 0);
-	glRotatef(30, -1, 0, 0);
-	gluCylinder(nQ, 0.15, 0.15, 1, 20, 5);
+    glTranslatef(0.0 , 0.0, -pos);
 
-	glTranslatef(0, 0, 1);
-	glTranslatef(0, -1, 0);
 
-	glRotatef(90.f, -1, 0, 0);
-	gluCylinder(nQ2, 0.15, 0.15, 1, 20, 5);
-	glPopMatrix();
-	*/
+    //Movement for upper leg
+    glRotatef(top_angle, 0, 0, 1);
+
+    if(vert_direction == 0)
+    {
+    	top_angle += 1;
+    	bot_angle += 2;
+
+    }
+    else if(vert_direction == 1)
+    {
+    	top_angle -= 1;
+    	bot_angle -= 2;
+    }
+
+
+    if(top_angle <=  10.0f)
+    {
+    	vert_direction = 0;
+    }
+    else if(top_angle >= 60.0f)
+    {
+    	vert_direction = 1;
+    }
+
+
+    //angle += 2.0f;
+
+    //Draw joint and upper leg
+    glutSolidSphere(0.2f, 20, 20);
+    glTranslatef(0.15f, 0, 0);
+    glPushMatrix();
+    	glRotatef(90.0f, 0, 1, 0);
+    	gluCylinder(nQ, 0.15f, 0.10f, 1, 20, 5);
+    glPopMatrix();
+
+
+
+    //Draw join and mid leg
+    glTranslatef(1.0f, 0, 0);
+    glRotatef(bot_angle, 0, 0, -1);
+
+    glutSolidSphere(0.2f, 20, 20);
+    glPushMatrix();
+    	glRotatef(90.0f, 0, 1, 0);
+        gluCylinder(nQ, 0.12f, 0.08f, 1, 20, 5);
+    glPopMatrix();
+
+    glTranslatef(1.0f, 0, 0);
+    glRotatef(10, 0, 0, 1);
+    glutSolidSphere(0.1f, 20, 20);
+    glPushMatrix();
+       	glRotatef(90.0f, 0, 1, 0);
+        gluCylinder(nQ, 0.05f, 0.01f, 0.3, 20, 5);
+    glPopMatrix();
+
+    glPopMatrix();
 
 
 }
@@ -191,18 +255,21 @@ void renderScene(){
     //glutSolidCube(1.0f);
 
 
-	renderLeg(1.0, 0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
-	renderLeg(1.0, 1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
-	renderLeg(1.0, 2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
+	render_forward_leg(1.0, -1, x, y, dir);
+
+
+	render_leg(1.0, 0, leg_angles[0][0], leg_angles[0][1], direction[0], side_angles[0], side_direction[0]);
+	render_leg(1.0, 1, leg_angles[1][0], leg_angles[1][1], direction[1], side_angles[1], side_direction[1]);
+	render_leg(1.0, 2, leg_angles[2][0], leg_angles[2][1], direction[2], side_angles[2], side_direction[2]);
 
 	glRotatef(180.0f, 0, 1, 0);
 	glPushMatrix();
-	renderLeg(-1.0, 0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
-	renderLeg(-1.0, -1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
-	renderLeg(-1.0, -2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
+	render_leg(-1.0, 0, leg_angles[3][0], leg_angles[3][1], direction[3], side_angles[3], side_direction[3]);
+	render_leg(-1.0, -1, leg_angles[4][0], leg_angles[4][1], direction[4], side_angles[4], side_direction[4]);
+	render_leg(-1.0, -2, leg_angles[5][0], leg_angles[5][1], direction[5], side_angles[5], side_direction[5]);
 	glPopMatrix();
-	//renderLeg(1);
-	//renderLeg(2);
+	//render_leg(1);
+	//render_leg(2);
 
     glPopMatrix();
 
@@ -369,6 +436,11 @@ int main(int argc, char *argv[]){
 
     leg_angles[5][0] = START1;
     leg_angles[5][1] = START2;
+
+    //Temp hack
+    x = 10;
+    y = 40;
+    dir = 0;
 
     camera = new Camera();
     // Setup OpenGL state & scene resources (models, textures etc)
