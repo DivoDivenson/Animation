@@ -67,11 +67,12 @@ void renderScene(){
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
-	
-
-
-	glTranslatef(0, -2, 0);
-	glutSolidCube(1.0f);
+	glPushMatrix();
+		glTranslatef(0, 0, -10);
+		glRotatef(45.0f, 1, 0, 0);
+		glRotatef(45.0f, 0, 1, 0);
+		glutSolidCube(0.2f);
+	glPopMatrix();
 	
 	camera->draw();
 	

@@ -162,10 +162,15 @@ void computeInverseKinematicsAngles()
 	}
 	BoneA_Angle = acos(BoneA_Angle);
 	//No "negative" angle
-	if(target2D_position[1] >= 0)
+	if(target2D_position[1] >= 0 && !invertedSolution)
 	{
 		theta *= -1.0f;
 	}
+	else if(target2D_position[1] <= 0 && invertedSolution)
+	{
+		theta *= -1.0f;
+	}
+	
 	BoneA_Angle -= theta;
 	
 
@@ -189,8 +194,17 @@ void computeInverseKinematicsAngles()
 	// TODO: compute bone angles depending on the target position target2D_position
 	
 	// Convert the angles in degrees as mathematical operations are usually conducted in radians
-	BoneA_Angle = glm::degrees(BoneA_Angle) * -1.0f; //Invert the result because of some reason I can't quite put to words,
-	BoneB_Angle = glm::degrees(BoneB_Angle) * -1.0f; //other than "OpenGL is the wrong way around"
+
+	if(!invertedSolution)
+	{
+		BoneA_Angle = glm::degrees(BoneA_Angle) * -1.0f; //Invert the result because of some reason I can't quite put to words,
+		BoneB_Angle = glm::degrees(BoneB_Angle) * -1.0f; //other than "OpenGL is the wrong way around"
+	}
+	else
+	{
+		BoneA_Angle = glm::degrees(BoneA_Angle);
+		BoneB_Angle = glm::degrees(BoneB_Angle);
+	}
 
 	//std::cout << "X: " << target2D_position[0] << " Y: " << target2D_position[1] << " D: " << d << "\n";
 	//std::cout << "A: " << BoneA_Angle << " B: " << BoneB_Angle << " Theta: " << theta  << "\n\n";
