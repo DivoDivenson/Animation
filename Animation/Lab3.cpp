@@ -62,23 +62,21 @@ void renderScene(){
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, grey_diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, grey_specular);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, grey_shininess);   
-
+	skybox->draw();
 	// Reset Modelview matrix      	
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	camera->draw();
-
-	skybox->draw();
 	
-	// Set view position & direction (Camera at (-5,0,0) looking on the positive X-axis). World is Y-up.
-	gluLookAt(-5,0,0, 1,0,0, 0,1,0);
 	
-	//Isometric
-	glRotatef(45.0f, 1, 0, 0);
-	glRotatef(45.0f, 0, 1, 0);
 
-	glEnable(GL_TEXTURE_2D);
+
+	glTranslatef(0, -2, 0);
 	glutSolidCube(1.0f);
+	
+	camera->draw();
+	
+
+	
 
 	glDisable(GL_LIGHTING);
 	
@@ -142,11 +140,16 @@ void keyPressed(unsigned char key, int x, int y){
 		// If so, exit the program
 		exitScene();
 		break;
-
-
 	default:
 		break;
 	}
+
+	camera->keypressdown(key, x, y);
+}
+
+void keyPressedUp(unsigned char key, int x, int y)
+{
+	camera->keypressup(key, x , y);
 }
 
 void keySpecialPressed (int key, int x, int y) {  
@@ -229,6 +232,8 @@ void mouse_move(int x, int y)
 }
 
 
+
+
 int main(int argc, char *argv[]){
         
     // Initialise OpenGL
@@ -245,6 +250,7 @@ int main(int argc, char *argv[]){
     glutDisplayFunc(renderScene);
     glutIdleFunc(updateScene);
     glutKeyboardFunc(keyPressed);
+	glutKeyboardUpFunc(keyPressedUp);
 	glutSpecialFunc(keySpecialPressed); // Tell GLUT to use the method "keySpecialPressed" for special key presses
 	glutMotionFunc(mouse_move);
 
