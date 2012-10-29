@@ -39,7 +39,7 @@ GLfloat BoneB_Length = 0.4;
 GLfloat BoneC_Length = 0.4;
 GLfloat BoneA_Angle(0), BoneB_Angle(0), BoneC_Angle(0);
 
-glm::vec2 target2D_position(BoneA_Length+BoneB_Length, 0);
+glm::vec2 target2D_position(BoneA_Length+BoneB_Length+BoneC_Length, 0);
 GLfloat deltaPos = 0.01;
 bool invertedSolution = false;
  
@@ -78,7 +78,7 @@ void renderScene(){
 	gluCylinder(nQ, 0.1, 0.01, BoneA_Length, 30, 5) ;
 	gluSphere(nQ, 0.1, 30, 5);
 	
-	//Translate by the bone length
+	// Translate by the bone length
 	glTranslatef(0,0.0,BoneA_Length);
 
 	glPushMatrix(); //remember the current state of the modelview matrix
@@ -90,17 +90,20 @@ void renderScene(){
 	gluCylinder(nQ, 0.1, 0.01, BoneB_Length, 30, 5) ;
 	gluSphere(nQ, 0.1, 30, 5);
 
-	glTranslatef(0, 0.0, BoneB_Length);
+	
+	glTranslatef(0, 0, BoneB_Length);
 
 	glPushMatrix();
 
-	glRotatef(BoneC_Angle, 1, 0, 0);
+	glRotatef(BoneC_Angle,1,0,0);
 
-	gluCylinder(nQ, 0.1, 0.01, BoneC_Length, 30, 5);
+	//Draw the second cone at the origin, pointing up
+	gluCylinder(nQ, 0.1, 0.01, BoneC_Length, 30, 5) ;
 	gluSphere(nQ, 0.1, 30, 5);
 
 
 	glPopMatrix();
+
 
 	glPopMatrix(); //restore the state of the modelview matrix
 
@@ -149,9 +152,9 @@ void computeInverseKinematicsAngles()
 	GLfloat theta;
 	
 
-	if( d >= ( BoneA_Length + BoneB_Length ))
+	if( d >= ( BoneA_Length + BoneB_Length + BoneC_Length))
 	{
-		d = BoneA_Length + BoneB_Length;
+		d = BoneA_Length + BoneB_Length + BoneC_Length;
 		//I'm sure there are much better ways to do this
 		GLfloat slope = target2D_position[1] / target2D_position[0];
 		GLfloat x = ( d * target2D_position[0] ) / glm::sqrt( glm::pow(target2D_position[0], 2.0f) + glm::pow(target2D_position[1], 2.0f));
@@ -175,10 +178,15 @@ void computeInverseKinematicsAngles()
 	}
 	BoneA_Angle = acos(BoneA_Angle);
 	//No "negative" angle
-	if(target2D_position[1] >= 0)
+	if(target2D_position[1] >= 0 && !invertedSolution)
 	{
 		theta *= -1.0f;
 	}
+	else if(target2D_position[1] <= 0 && invertedSolution)
+	{
+		theta *= -1.0f;
+	}
+	
 	BoneA_Angle -= theta;
 	
 
@@ -197,13 +205,24 @@ void computeInverseKinematicsAngles()
 		BoneB_Angle = glm::acos(BoneB_Angle) - GL_PI; //Forget the logic behind the PI bit
 	}
 
-	//BoneB_Angle = 0.0;
+	
 	
 	// TODO: compute bone angles depending on the target position target2D_position
 	
 	// Convert the angles in degrees as mathematical operations are usually conducted in radians
-	BoneA_Angle = glm::degrees(BoneA_Angle) * -1.0f; //Invert the result because of some reason I can't quite put to words,
-	BoneB_Angle = glm::degrees(BoneB_Angle) * -1.0f; //other than "OpenGL is the wrong way around"
+
+	if(!invertedSolution)
+	{
+		BoneA_Angle = glm::degrees(BoneA_Angle) * -1.0f; //Invert the result because of some reason I can't quite put to words,
+		BoneB_Angle = glm::degrees(BoneB_Angle) * -1.0f; //other than "OpenGL is the wrong way around"
+	}
+	else
+	{
+		BoneA_Angle = glm::degrees(BoneA_Angle);
+		BoneB_Angle = glm::degrees(BoneB_Angle);
+	}
+
+	BoneC_Angle = BoneB_Angle;
 
 	//std::cout << "X: " << target2D_position[0] << " Y: " << target2D_position[1] << " D: " << d << "\n";
 	//std::cout << "A: " << BoneA_Angle << " B: " << BoneB_Angle << " Theta: " << theta  << "\n\n";
