@@ -7,6 +7,7 @@
 #define _USE_MATH_DEFINES //To include the constante M_PI
 #define GL_PI 3.1415926535897932384626433832795
 #include <math.h>
+#include "consts.h"
 
 void setupScene();
 void updateScene();
@@ -34,14 +35,77 @@ GLfloat grey_diffuse[] = {0.161424, 0.161424, 0.161424};
 GLfloat grey_specular[] = {0.727811, 0.727811, 0.727811};
 GLfloat grey_shininess = 76.8;
 
-GLfloat BoneA_Length = 0.5;
-GLfloat BoneB_Length = 0.4;
-GLfloat BoneC_Length = 0.4;
+GLfloat BoneA_Length = 0.65;
+GLfloat BoneB_Length = 0.55;
+GLfloat BoneC_Length = 0.55;
 GLfloat BoneA_Angle(0), BoneB_Angle(0), BoneC_Angle(0);
 
-glm::vec2 target2D_position(BoneA_Length+BoneB_Length+BoneC_Length, 0);
+
+glm::vec2 target2D_position(1.12f, -0.1f);
+
+glm::vec3 leg_pos[] = {glm::vec3(1.12f, -0.1f, 0.0f), glm::vec3(0.94f, -0.1f, 0.0f)};
+
+glm::vec3 leg_angles[] = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f)};
 GLfloat deltaPos = 0.01;
 bool invertedSolution = false;
+
+//Need code to figure out the required speed
+glm::vec2 key_frames[] = { glm::vec2(1.12f, -0.1f), glm::vec2(0.94f, -0.1f), glm::vec2(1.03f, 0.2f) };
+int frames[] = {0, 1}; //Each leg starts at a different "frame"
+
+
+
+void draw_leg(float x, int leg_no)
+{
+
+
+	//To setup the creation of quadric objects
+	GLUquadric* nQ;
+	nQ=gluNewQuadric();
+
+    glPushMatrix(); //remember the current state of the modelview matrix
+	glTranslatef(x, 0, 0);
+
+	// Rotate from the angle between the first bone and the Z axis
+	glRotatef(leg_angles[leg_no][0],1,0,0);
+
+	//Draw the first cone at the origin
+	gluCylinder(nQ, 0.1, 0.01, BoneA_Length, 30, 5) ;
+	gluSphere(nQ, 0.1, 30, 5);
+	
+	// Translate by the bone length
+	glTranslatef(0,0.0,BoneA_Length);
+
+	glPushMatrix(); //remember the current state of the modelview matrix
+
+	// Rotate from the angle between the first and second bones
+	glRotatef(leg_angles[leg_no][1],1,0,0);
+
+	//Draw the second cone at the origin, pointing up
+	gluCylinder(nQ, 0.1, 0.01, BoneB_Length, 30, 5) ;
+	gluSphere(nQ, 0.1, 30, 5);
+
+	
+	glTranslatef(0, 0, BoneB_Length);
+
+	glPushMatrix();
+
+	glRotatef(leg_angles[leg_no][2],1,0,0);
+
+	//Draw the second cone at the origin, pointing up
+	gluCylinder(nQ, 0.1, 0.01, BoneC_Length, 30, 5) ;
+	gluSphere(nQ, 0.1, 30, 5);
+
+
+	glPopMatrix();
+
+
+	glPopMatrix(); //restore the state of the modelview matrix
+
+	glPopMatrix(); //restore the state of the modelview matrix
+
+
+}
  
 void renderScene(){
         
@@ -64,52 +128,13 @@ void renderScene(){
 	
 	// Set view position & direction (Camera at (-5,0,0) looking on the positive X-axis). World is Y-up.
 	gluLookAt(-5,0,0, 1,0,0, 0,1,0);
-
-	//To setup the creation of quadric objects
-	GLUquadric* nQ;
-	nQ=gluNewQuadric();
-
-    glPushMatrix(); //remember the current state of the modelview matrix
-
-	// Rotate from the angle between the first bone and the Z axis
-	glRotatef(BoneA_Angle,1,0,0);
-
-	//Draw the first cone at the origin
-	gluCylinder(nQ, 0.1, 0.01, BoneA_Length, 30, 5) ;
-	gluSphere(nQ, 0.1, 30, 5);
+	//glRotatef(45.0f, -1, 0, 0);
+	//glRotatef(45.0f, 0, -1, 0);
+	draw_leg(1.0f, 0);
+	draw_leg(2.0f, 1);
+	//draw_leg(3.0f);
 	
-	// Translate by the bone length
-	glTranslatef(0,0.0,BoneA_Length);
-
-	glPushMatrix(); //remember the current state of the modelview matrix
-
-	// Rotate from the angle between the first and second bones
-	glRotatef(BoneB_Angle,1,0,0);
-
-	//Draw the second cone at the origin, pointing up
-	gluCylinder(nQ, 0.1, 0.01, BoneB_Length, 30, 5) ;
-	gluSphere(nQ, 0.1, 30, 5);
-
-	
-	glTranslatef(0, 0, BoneB_Length);
-
-	glPushMatrix();
-
-	glRotatef(BoneC_Angle,1,0,0);
-
-	//Draw the second cone at the origin, pointing up
-	gluCylinder(nQ, 0.1, 0.01, BoneC_Length, 30, 5) ;
-	gluSphere(nQ, 0.1, 30, 5);
-
-
-	glPopMatrix();
-
-
-	glPopMatrix(); //restore the state of the modelview matrix
-
-	glPopMatrix(); //restore the state of the modelview matrix
-
-	drawTarget();
+	//drawTarget();
 
 	glDisable(GL_LIGHTING);
 	
@@ -146,63 +171,63 @@ GLfloat BoneA_Angle(0), BoneB_Angle(0);
 glm::vec2 target2D_position(X, Y);*/
 
 
-void computeInverseKinematicsAngles()
+void computeInverseKinematicsAngles(int leg_no)
 {
-	GLfloat d = glm::sqrt( glm::pow(target2D_position[0], 2.0f) + glm::pow(target2D_position[1], 2.0f));
+	GLfloat d = glm::sqrt( glm::pow(leg_pos[leg_no][0], 2.0f) + glm::pow(leg_pos[leg_no][1], 2.0f));
 	GLfloat theta;
 	
 
-	if( d >= ( BoneA_Length + BoneB_Length + BoneC_Length))
+	if( d >= ( BoneA_Length + BoneB_Length + BoneC_Length) )
 	{
 		d = BoneA_Length + BoneB_Length + BoneC_Length;
 		//I'm sure there are much better ways to do this
-		GLfloat slope = target2D_position[1] / target2D_position[0];
-		GLfloat x = ( d * target2D_position[0] ) / glm::sqrt( glm::pow(target2D_position[0], 2.0f) + glm::pow(target2D_position[1], 2.0f));
+		GLfloat slope = leg_pos[leg_no][1] / leg_pos[leg_no][0];
+		GLfloat x = ( d * leg_pos[leg_no][0] ) / glm::sqrt( glm::pow(leg_pos[leg_no][0], 2.0f) + glm::pow(leg_pos[leg_no][1], 2.0f));
 		theta = glm::acos( (x / d));
 		//std::cout << "Slope: " << slope << " X: " << x << " Theta: " << theta << " D: " << d << "\n";
 	}
 	else
 	{
-		theta = glm::acos( (target2D_position[0] / d));
+		theta = glm::acos( (leg_pos[leg_no][0] / d));
 	}
 
 
 
 	
-	BoneA_Angle = ( glm::pow(d, 2.0f) + glm::pow(BoneA_Length, 2.0f) - glm::pow(BoneB_Length, 2.0f));
-	BoneA_Angle = BoneA_Angle / (2.0f * BoneA_Length * d);
+	leg_angles[leg_no][0] = ( glm::pow(d, 2.0f) + glm::pow(BoneA_Length, 2.0f) - glm::pow(BoneB_Length, 2.0f));
+	leg_angles[leg_no][0] = leg_angles[leg_no][0] / (2.0f * BoneA_Length * d);
 	//Prevent overlap
-	if(BoneA_Angle > 1.0f)
+	if(leg_angles[leg_no][0] > 1.0f)
 	{
-		BoneA_Angle = 1.0f;
+		leg_angles[leg_no][0] = 1.0f;
 	}
-	BoneA_Angle = acos(BoneA_Angle);
+	leg_angles[leg_no][0] = acos(leg_angles[leg_no][0]);
 	//No "negative" angle
-	if(target2D_position[1] >= 0 && !invertedSolution)
+	if(leg_pos[leg_no][1] >= 0 && !invertedSolution)
 	{
 		theta *= -1.0f;
 	}
-	else if(target2D_position[1] <= 0 && invertedSolution)
+	else if(leg_pos[leg_no][1] <= 0 && invertedSolution)
 	{
 		theta *= -1.0f;
 	}
 	
-	BoneA_Angle -= theta;
+	leg_angles[leg_no][0] -= theta;
 	
 
-	BoneB_Angle = ( glm::pow(BoneA_Length, 2.0f) + glm::pow(BoneB_Length, 2.0f) - glm::pow(d, 2.0f));
-	BoneB_Angle = BoneB_Angle / (2.0f * BoneA_Length * BoneB_Length);
-	if(BoneB_Angle <= -1.0f)
+	leg_angles[leg_no][1] = ( glm::pow(BoneA_Length, 2.0f) + glm::pow(BoneB_Length, 2.0f) - glm::pow(d, 2.0f));
+	leg_angles[leg_no][1] = leg_angles[leg_no][1] / (2.0f * BoneA_Length * BoneB_Length);
+	if(leg_angles[leg_no][1] <= -1.0f)
 	{
-		BoneB_Angle = 0.0; //HACK, acos(-1) returns NaN for some reason. Yes, it was very annoying to discover.
+		leg_angles[leg_no][1] = 0.0; //HACK, acos(-1) returns NaN for some reason. Yes, it was very annoying to discover.
 	}
 	else
 	{
-		if(BoneB_Angle > 1.0f)
+		if(leg_angles[leg_no][1] > 1.0f)
 		{
-			BoneB_Angle = 1.0f;
+			leg_angles[leg_no][1] = 1.0f;
 		}
-		BoneB_Angle = glm::acos(BoneB_Angle) - GL_PI; //Forget the logic behind the PI bit
+		leg_angles[leg_no][1] = glm::acos(leg_angles[leg_no][1]) - GL_PI; //Forget the logic behind the PI bit
 	}
 
 	
@@ -213,21 +238,75 @@ void computeInverseKinematicsAngles()
 
 	if(!invertedSolution)
 	{
-		BoneA_Angle = glm::degrees(BoneA_Angle) * -1.0f; //Invert the result because of some reason I can't quite put to words,
-		BoneB_Angle = glm::degrees(BoneB_Angle) * -1.0f; //other than "OpenGL is the wrong way around"
+		leg_angles[leg_no][0] = glm::degrees(leg_angles[leg_no][0]) * -1.0f; //Invert the result because of some reason I can't quite put to words,
+		leg_angles[leg_no][1] = glm::degrees(leg_angles[leg_no][1]) * -1.0f; //other than "OpenGL is the wrong way around"
 	}
 	else
 	{
-		BoneA_Angle = glm::degrees(BoneA_Angle);
-		BoneB_Angle = glm::degrees(BoneB_Angle);
+		leg_angles[leg_no][0] = glm::degrees(leg_angles[leg_no][0]);
+		leg_angles[leg_no][1] = glm::degrees(leg_angles[leg_no][1]);
 	}
 
-	BoneC_Angle = BoneB_Angle;
+	leg_angles[leg_no][2] = leg_angles[leg_no][1];
 
 	//std::cout << "X: " << target2D_position[0] << " Y: " << target2D_position[1] << " D: " << d << "\n";
 	//std::cout << "A: " << BoneA_Angle << " B: " << BoneB_Angle << " Theta: " << theta  << "\n\n";
 	
 }
+
+
+int frame_inc(int frame)
+{
+	if(frame >= 2 ) //Hardcode for the minute
+	{
+		frame = 0;
+	}
+	else
+	{
+		frame++;
+	}
+
+	return frame;
+}
+
+float move_toward(float pos, float target, float speed)
+{
+
+	//std::cout << "HELLO " << pos << " : " << target << " : " << pos / target <<"\n";
+	if(abs(pos - target) < 0.00001) //Equality
+	{
+		//std::cout << "WORKS" << "\n";
+		return pos;
+	}
+	else if(pos < target)
+	{
+		return pos += deltaPos * speed;
+	}
+	else if(pos > target)
+	{
+		return pos -= deltaPos * speed;
+	}
+
+}
+
+void move_target(int leg_no)
+{
+	//If statement is a hack
+	std::cout << leg_no << " : " << frames[leg_no] << "\n";
+	if( (abs(leg_pos[leg_no][0] - key_frames[frames[leg_no]][0]) >= EPSILON))// && (abs(target2D_position[1] - key_frames[frame][1]) >= EPSILON))
+	{
+		leg_pos[leg_no][0] = move_toward(leg_pos[leg_no][0], key_frames[frames[leg_no]][0], 1.0f);
+		leg_pos[leg_no][1] = move_toward(leg_pos[leg_no][1], key_frames[frames[leg_no]][1], 3.0f);
+	}
+	else
+	{
+		//std::cout << "INC" << "\n";
+		frames[leg_no] = frame_inc(frames[leg_no]);
+	}
+	//target2D_position[1] += deltaPos;
+	//std::cout << "\n";
+}
+
 
 void updateScene(){
 	
@@ -236,7 +315,10 @@ void updateScene(){
 	while(timeGetTime()-lastTickCount<16);
 	lastTickCount=timeGetTime();
 
-	computeInverseKinematicsAngles();
+	computeInverseKinematicsAngles(0);
+	move_target(0);
+	computeInverseKinematicsAngles(1);
+	move_target(1);
     
     // Do any other updates here
 	
@@ -279,11 +361,13 @@ void keyPressed(unsigned char key, int x, int y){
 	case 'x':
 	case 'X':
 		BoneB_Length -= deltaPos;
+		BoneC_Length -= deltaPos;
 		break;
 
 	case 's':
 	case 'S':
 		BoneB_Length += deltaPos;
+		BoneC_Length += deltaPos;
 		break;
 
 	// Other possible keypresses go here
@@ -332,7 +416,9 @@ void setupScene(){
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, white_light);
 	glShadeModel(GL_SMOOTH);
 
-	glEnable(GL_DEPTH_TEST);        
+	glEnable(GL_DEPTH_TEST);     
+
+
 }
 
 void exitScene(){
@@ -383,7 +469,6 @@ int main(int argc, char *argv[]){
     glutIdleFunc(updateScene);
     glutKeyboardFunc(keyPressed);
 	glutSpecialFunc(keySpecialPressed); // Tell GLUT to use the method "keySpecialPressed" for special key presses  
-
     // Setup OpenGL state & scene resources (models, textures etc)
     setupScene();
 
