@@ -43,19 +43,19 @@ GLfloat BoneA_Angle(0), BoneB_Angle(0), BoneC_Angle(0);
 
 glm::vec2 target2D_position(1.12f, -0.1f);
 
-glm::vec3 leg_pos[] = {glm::vec3(1.12f, -0.1f, 0.0f), glm::vec3(0.94f, -0.1f, 0.0f)};
+glm::vec3 leg_pos[] = {glm::vec3(1.12f, -0.1f, 0.0f), glm::vec3(0.94f, -0.1f, 0.0f), glm::vec3(0.94f, -0.1f, 0.0f), glm::vec3(1.12f, -0.1f, 0.0f),};
 
-glm::vec3 leg_angles[] = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f)};
+glm::vec3 leg_angles[] = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f)};
 GLfloat deltaPos = 0.01;
 bool invertedSolution = false;
 
 //Need code to figure out the required speed
 glm::vec2 key_frames[] = { glm::vec2(1.12f, -0.1f), glm::vec2(0.94f, -0.1f), glm::vec2(1.03f, 0.2f) };
-int frames[] = {0, 1}; //Each leg starts at a different "frame"
+int frames[] = {0, 1, 1, 0}; //Each leg starts at a different "frame"
 
 
 
-void draw_leg(float x, int leg_no)
+void draw_leg(float x, float y_rot, int leg_no)
 {
 
 
@@ -64,10 +64,11 @@ void draw_leg(float x, int leg_no)
 	nQ=gluNewQuadric();
 
     glPushMatrix(); //remember the current state of the modelview matrix
-	glTranslatef(x, 0, 0);
 
+	glTranslatef(x, 0, 0);
+	glRotatef(y_rot, 0, 1, 0);
 	// Rotate from the angle between the first bone and the Z axis
-	glRotatef(leg_angles[leg_no][0],1,0,0);
+	glRotatef(leg_angles[leg_no][0],1, 0, 0);
 
 	//Draw the first cone at the origin
 	gluCylinder(nQ, 0.1, 0.01, BoneA_Length, 30, 5) ;
@@ -101,7 +102,7 @@ void draw_leg(float x, int leg_no)
 
 
 	glPopMatrix(); //restore the state of the modelview matrix
-
+	
 	glPopMatrix(); //restore the state of the modelview matrix
 
 
@@ -128,10 +129,20 @@ void renderScene(){
 	
 	// Set view position & direction (Camera at (-5,0,0) looking on the positive X-axis). World is Y-up.
 	gluLookAt(-5,0,0, 1,0,0, 0,1,0);
+	glRotatef(90.0f, 0, 0, 1);
 	//glRotatef(45.0f, -1, 0, 0);
 	//glRotatef(45.0f, 0, -1, 0);
-	draw_leg(1.0f, 0);
-	draw_leg(2.0f, 1);
+
+	glPushMatrix();
+	draw_leg(0, -20.0f, 0);
+	draw_leg(1.0f, 20.0f, 1);
+	glPushMatrix();
+		glRotatef(180.0f, 0, 1, 0);
+		glTranslatef(0, 0, 1.0);
+		draw_leg(-1.0f, -20.0f, 2);
+		draw_leg(0, 20.0f, 3);
+	glPopMatrix();
+	glPopMatrix();
 	//draw_leg(3.0f);
 	
 	//drawTarget();
@@ -255,16 +266,31 @@ void computeInverseKinematicsAngles(int leg_no)
 }
 
 
-int frame_inc(int frame)
+int frame_inc(int frame, int direction)
 {
-	if(frame >= 2 ) //Hardcode for the minute
+	if(!direction)
 	{
-		frame = 0;
+		if(frame >= 2 ) //Hardcode for the minute
+		{
+			frame = 0;
+		}
+		else
+		{
+			frame++;
+		}
 	}
 	else
 	{
-		frame++;
+		if(frame <= 0 ) //Hardcode for the minute
+		{
+			frame = 2;
+		}
+		else
+		{
+			frame--;
+		}
 	}
+	
 
 	return frame;
 }
@@ -289,10 +315,10 @@ float move_toward(float pos, float target, float speed)
 
 }
 
-void move_target(int leg_no)
+void move_target(int leg_no, int direction)
 {
 	//If statement is a hack
-	std::cout << leg_no << " : " << frames[leg_no] << "\n";
+	//std::cout << leg_no << " : " << frames[leg_no] << "\n";
 	if( (abs(leg_pos[leg_no][0] - key_frames[frames[leg_no]][0]) >= EPSILON))// && (abs(target2D_position[1] - key_frames[frame][1]) >= EPSILON))
 	{
 		leg_pos[leg_no][0] = move_toward(leg_pos[leg_no][0], key_frames[frames[leg_no]][0], 1.0f);
@@ -301,7 +327,7 @@ void move_target(int leg_no)
 	else
 	{
 		//std::cout << "INC" << "\n";
-		frames[leg_no] = frame_inc(frames[leg_no]);
+		frames[leg_no] = frame_inc(frames[leg_no], direction);
 	}
 	//target2D_position[1] += deltaPos;
 	//std::cout << "\n";
@@ -316,10 +342,14 @@ void updateScene(){
 	lastTickCount=timeGetTime();
 
 	computeInverseKinematicsAngles(0);
-	move_target(0);
+	move_target(0, 0);
 	computeInverseKinematicsAngles(1);
-	move_target(1);
-    
+	move_target(1, 0);
+	computeInverseKinematicsAngles(2);
+	move_target(2, 1);
+	computeInverseKinematicsAngles(3);
+	move_target(3, 1);
+
     // Do any other updates here
 	
 	// Draw the next frame
